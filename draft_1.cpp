@@ -34,13 +34,15 @@ double time_read_it0() {
 */
 
 // generates an array of i random numbers between 0 and n
+/*
 unsigned[] create_indices (i, n) {
 	to_add = int[]
 	
 }
+*/
 
 //creates a buffer of n chars (because chars are 1 byte).  We don't care what's in them.  
-char[] create_buffer (unsigned n) {
+unsigned[] create_buffer (unsigned n) {
 
 }
 
@@ -49,14 +51,14 @@ duration<double> time_to_read(unsigned n) { /*, unsigned i*/
 	unsigned[] buffer = create_buffer (n);
 	//unsigned[] random_indices = create_indices(i);
 	volatile unsigned curr_val = 0;
-	const auto start = steady_clock::now();
+	const  start = steady_clock::now();
 	for (unsigned j = 0; j < ITERATIONS_PER_TEST; j++) {
-		curr_val = buffer[random_indices[j]]; // buffer[curr_val]
+		curr_val = buffer[curr_val];
 	}
 	const auto end = steady_clock::now();
 	free(buffer);
 	//free(random_indices);
-	duration<double> elapsed_time = end - start;
+	duration<double, nano> elapsed_time = end - start;
 	//cout<<"It took "<<elapsed_time.count()<<" seconds to read a byte from a buffer of " << n << " bytes " << i <<" times\n"; // shoud this really print?  
 	return elapsed_time;
 }
@@ -64,17 +66,21 @@ duration<double> time_to_read(unsigned n) { /*, unsigned i*/
 int main (int argc, char *argv[]) {
 // sanity: print sizeof char, sizeof unsigned,
 // remember: args are n, step, steps, i
-	if (argc != 5) {
+	if (argc != 4) {  // != 5
 		cout << "Unexpected number of arguments: " << argc << "\n";
 		return -1;
 	}
 	const unsigned start_buffer_size = argv[1];
 	const unsigned step_size = argv[2];
 	const unsigned num_steps = argv[3];
-	const unsigned iterations = argv[4];
+	//const unsigned iterations = argv[4];
 
-	for (unsigned i = 0; i < iterations; i++) {
-		
+	for (unsigned i = 0; i < num_steps; i++) { 
+		unsigned buffer_size = start_buffer_size << (i*step_size))
+		double<duration> test_time = time_to_read(buffer_size);
+		cout << "it took an average of " << (double) (test_time.count()/ITERATIONS_PER_TEST)
+		<< " nanoseconds to read a byte out of a buffer of " << buffer_size << " bytes over " 
+		<< ITERATIONS_PER_TEST << " tests.\n"; // format this to make a better csv file for plotting?
 	}
 
 	return 0;
