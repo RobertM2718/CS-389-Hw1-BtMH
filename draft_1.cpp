@@ -33,12 +33,14 @@ double time_read_it0() {
 }
 */
 
-// takes a number of random indices.  Doesn't matter how slow
-unsigned[] create_indices (n) {
-	to_fill = 
+// generates an array of i random numbers between 0 and n
+unsigned[] create_indices (i, n) {
+	to_add = int[]
+	
 }
 
-duration<double> time_to_read(x, y, it) {
+// measures the time it takes to read a byte from a size n buffer i times
+duration<double> time_to_read(n, i) {
 
 }
 
