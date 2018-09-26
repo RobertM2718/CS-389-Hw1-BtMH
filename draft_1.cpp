@@ -6,6 +6,7 @@
 #include <chrono>
 #include <iostream>
 #include <stdlib.h>
+#include "buffermaker.h"
 
 using namespace std; //to make things simpler to write
 using namespace std::chrono;
@@ -42,27 +43,28 @@ unsigned[] create_indices (i, n) {
 */
 
 //creates a buffer of n chars (because chars are 1 byte).  We don't care what's in them.  
-unsigned[] create_buffer (unsigned n) {
-
-}
 
 // measures the time it takes to read a byte from a size n buffer i times
-duration<double> time_to_read(unsigned n) { /*, unsigned i*/
-	unsigned[] buffer = create_buffer (n);
+duration<double, nano> time_to_read(unsigned buffer_size) { /*, unsigned i*/
+	u_int32_t correct_type_buffer_size = (u_int32_t) buffer_size;
+	u_int32_t *buffer = create_buffer(correct_type_buffer_size);
 	//unsigned[] random_indices = create_indices(i);
-	volatile unsigned curr_val = 0;
-	const  start = steady_clock::now();
-	for (unsigned j = 0; j < ITERATIONS_PER_TEST; j++) {
+	volatile u_int32_t curr_val = 0;
+	const auto start_time = steady_clock::now();
+	for (unsigned i = 0; i < ITERATIONS_PER_TEST; i++) {
 		curr_val = buffer[curr_val];
 	}
-	const auto end = steady_clock::now();
+	const auto end_time = steady_clock::now();
 	free(buffer);
 	//free(random_indices);
-	duration<double, nano> elapsed_time = end - start;
+	duration<double, nano> elapsed_time = end_time - start_time;
 	//cout<<"It took "<<elapsed_time.count()<<" seconds to read a byte from a buffer of " << n << " bytes " << i <<" times\n"; // shoud this really print?  
 	return elapsed_time;
 }
 
+/* Main takes 3 arguments: a starting size for the buffer to be read out of, a step size by which to increase the 
+ *
+ */
 int main (int argc, char *argv[]) {
 // sanity: print sizeof char, sizeof unsigned,
 // remember: args are n, step, steps, i
@@ -70,15 +72,15 @@ int main (int argc, char *argv[]) {
 		cout << "Unexpected number of arguments: " << argc << "\n";
 		return -1;
 	}
-	const unsigned start_buffer_size = argv[1];
-	const unsigned step_size = argv[2];
-	const unsigned num_steps = argv[3];
+	const unsigned start_buffer_size = stoul(argv[1]);
+	const unsigned step_size = stoul(argv[2]);
+	const unsigned num_steps = stoul(argv[3]);
 	//const unsigned iterations = argv[4];
 
 	for (unsigned i = 0; i < num_steps; i++) { 
-		unsigned buffer_size = start_buffer_size << (i*step_size))
-		double<duration> test_time = time_to_read(buffer_size);
-		cout << "it took an average of " << (double) (test_time.count()/ITERATIONS_PER_TEST)
+		unsigned buffer_size = start_buffer_size * (2 <<(i*step_size));
+		duration<double, nano> test_time = time_to_read(buffer_size);
+		cout << "It took an average of " << ((double) test_time.count())/ITERATIONS_PER_TEST
 		<< " nanoseconds to read a byte out of a buffer of " << buffer_size << " bytes over " 
 		<< ITERATIONS_PER_TEST << " tests.\n"; // format this to make a better csv file for plotting?
 	}
