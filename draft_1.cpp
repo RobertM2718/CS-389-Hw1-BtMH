@@ -46,15 +46,15 @@ unsigned[] create_indices (i, n) {
 //creates a buffer of n chars (because chars are 1 byte).  We don't care what's in them.  
 
 // measures the time it takes to read a byte from a size n buffer i times
-duration<double, nano> time_to_read(unsigned buffer_size) { /*, unsigned i*/
+duration<double, nano> time_to_read(unsigned buffer_size, unsigned iterations) { /*, unsigned i*/
 	u_int32_t correct_type_buffer_size = (u_int32_t) buffer_size;
 	u_int32_t *buffer = create_buffer(correct_type_buffer_size);
 	//unsigned[] random_indices = create_indices(i);
 	volatile u_int32_t curr_val = 0;
 	const auto start_time = steady_clock::now();
-	for (unsigned i = 0; i < ITERATIONS_PER_TEST; i++) {
+	for (unsigned i = 0; i < iterations; i++) {
 
-		curr_val = buffer[curr_val];
+		curr_val = (buffer[curr_val] + curr_val) % buffer_size;
 	}
 	const auto end_time = steady_clock::now();
 	free(buffer);
@@ -70,20 +70,22 @@ duration<double, nano> time_to_read(unsigned buffer_size) { /*, unsigned i*/
 int main (int argc, char *argv[]) {
 // sanity: print sizeof char, sizeof unsigned,
 // remember: args are n, step, steps, i
-	if (argc != 4) {  // != 5
+	if (argc != 5) {  // != 5
 		cout << "Unexpected number of arguments: " << argc << "\n";
 		return -1;
 	}
 	const unsigned start_buffer_power = stoul(argv[1]);
 	const unsigned power_step_size = stoul(argv[2]);
 	const unsigned end_buffer_power = stoul(argv[3]);
+	const unsigned reads_per_buffer_item = stoul(argv[4]);
 	assert(end_buffer_power >= start_buffer_power);
-	const unsigned num_steps = end_buffer_power - start_buffer_power + 1;
+	const unsigned num_steps = (end_buffer_power - start_buffer_power) / power_step_size+ 1;
 	//const unsigned iterations = argv[4];
 
 	for (unsigned i = 0; i < num_steps; i++) { 
 		unsigned buffer_size = pow(2, i*power_step_size + start_buffer_power)/sizeof(u_int32_t);
-		duration<double, nano> test_time = time_to_read(buffer_size);
+		unsigned iterations = reads_per_buffer_item * buffer_size;
+		duration<double, nano> test_time = time_to_read(buffer_size, iterations);
 		/*
 		cout << "It took an average of " << ((double) test_time.count())/ITERATIONS_PER_TEST
 		<< " nanoseconds to read a byte out of a buffer of " << buffer_size << " bytes over " 
@@ -91,7 +93,7 @@ int main (int argc, char *argv[]) {
 		*/
 		//need to change this message to report number of bytes, not u_int32_t's.  
 		cout << "Buffer size: " << "2^" << i*power_step_size + start_buffer_power << " bytes\t\tMean time/read: " 
-		<< ((double) test_time.count()) / ITERATIONS_PER_TEST << " ns\n";
+		<< ((double) test_time.count()) / iterations << " ns\n";
 		//cout << "buffer size: " << buffer_size << "\n";
 	}
 
