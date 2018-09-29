@@ -51,10 +51,12 @@ duration<double, nano> time_to_read(unsigned buffer_size, unsigned iterations) {
 	u_int32_t *buffer = create_buffer(correct_type_buffer_size);
 	//unsigned[] random_indices = create_indices(i);
 	volatile u_int32_t curr_val = 0;
+	//unsigned prev_val = buffer[0]
 	const auto start_time = steady_clock::now();
 	for (unsigned i = 0; i < iterations; i++) {
 
-		curr_val = (buffer[curr_val] + curr_val) % buffer_size;
+		curr_val = buffer[curr_val];
+		
 	}
 	const auto end_time = steady_clock::now();
 	free(buffer);
